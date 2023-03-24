@@ -1,0 +1,17 @@
+INFORMAÇÕES A SEREM EXIBIDAS NO DASHBOARD
+
+PAINEL 1
+Vendas mensal
+Lucro
+Contas a pagar
+Contas a Receber
+
+PAINEL 2
+Gráfico de vendas de cada mês
+Meta de venda
+Super meta de venda
+
+PAINEL 3
+Vendas de hoje
+Ticket Médio
+Quantidade de produtos vendidos
