@@ -85,6 +85,9 @@ type
     ADOQuery_painel_mensal: TADOQuery;
     ADOQuery_informacoes_diarias: TADOQuery;
     Timer_info_diarias: TTimer;
+    DS_grafico: TDataSource;
+    ADOQuery_grafico: TADOQuery;
+    SpeedButton1: TSpeedButton;
     procedure FormShow(Sender: TObject);
     procedure Rect_vendas_mensalMouseEnter(Sender: TObject);
     procedure Rect_vendas_mensalMouseLeave(Sender: TObject);
@@ -98,6 +101,7 @@ type
     procedure Timer_info_diariasTimer(Sender: TObject);
     procedure img_atualizarMouseEnter(Sender: TObject);
     procedure img_atualizarMouseLeave(Sender: TObject);
+    procedure SpeedButton1Click(Sender: TObject);
   private
     procedure Atualiza_dados;
     procedure Atualiza_Resumo_Mensal;
@@ -174,6 +178,25 @@ begin
 
   Anim_Y_mensal.Inverse:= True;
   Anim_Y_mensal.Start;
+end;
+
+procedure TFrm_principal.SpeedButton1Click(Sender: TObject);
+begin
+  Series1.Clear;
+  Series1.addY(0,'');
+  Series1.addY(1200.50,'Jan');
+  Series1.addY(1300.00,'Fev');
+  Series1.addY(620.00,'Mar');
+  Series1.addY(880.00,'Abr');
+  Series1.addY(701.00,'Mai');
+  Series1.addY(664.50,'Jun');
+  Series1.addY(70,'Jul');
+  Series1.addY(20,'Ago');
+  Series1.addY(12,'Set');
+  Series1.addY(12,'Out');
+  Series1.addY(12,'Nov');
+  Series1.addY(12,'Dez');
+
 end;
 
 procedure TFrm_principal.Timer_info_diariasTimer(Sender: TObject);
@@ -277,7 +300,7 @@ begin
 
   Label_valor_hoje.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_informacoes_diarias.FieldByName('total').AsCurrency);
   Label_valo_tktMedio.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_informacoes_diarias.FieldByName('ticket').AsCurrency);
-  Label_qtd.Text:= ADOQuery_informacoes_diarias.FieldByName('quantidade').AsString;
+  Label_qtd.Text:= FormatCurr('####,###0.000',ADOQuery_informacoes_diarias.FieldByName('quantidade').AsCurrency);
 end;
 
 end.

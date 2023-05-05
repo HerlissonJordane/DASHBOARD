@@ -15,3 +15,9 @@ PAINEL 3
 Vendas de hoje
 Ticket Médio
 Quantidade de produtos vendidos
+-------------------------------------------------------
+PRÓXIMOS PASSOS:
+1- Colocar o nome do usuário para aparecer no topo do Dashboard
+2- Implementar as informações no gráfico de histórico de vendas mensal dos últimos 12 meses.
+3- Puxar o valor das metas cadastradas no sistema
+4- Inserir aviso caso não tenha nenhnuma meta cadastrada e possívelmente ensinando onde cadastrar
