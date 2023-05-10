@@ -8,7 +8,7 @@ uses
   FMXTee.Series, FMXTee.Procs, FMXTee.Chart, FMX.Objects,
   FMX.Controls.Presentation, FMX.StdCtrls, FMX.DateTimeCtrls, FMX.ListBox,
   FMX.Controls3D, FMXTee.Chart3D, FMX.Ani, System.ImageList, FMX.ImgList,
-  Data.DB, Data.Win.ADODB;
+  Data.DB, Data.Win.ADODB, DateUtils;
 
 type
   TFrm_principal = class(TForm)
@@ -85,9 +85,12 @@ type
     ADOQuery_painel_mensal: TADOQuery;
     ADOQuery_informacoes_diarias: TADOQuery;
     Timer_info_diarias: TTimer;
-    DS_grafico: TDataSource;
     ADOQuery_grafico: TADOQuery;
     SpeedButton1: TSpeedButton;
+    FloatAnimation1: TFloatAnimation;
+    Series2: TLineSeries;
+    Anim_X_grafico: TFloatAnimation;
+    Anim_Y_grafico: TFloatAnimation;
     procedure FormShow(Sender: TObject);
     procedure Rect_vendas_mensalMouseEnter(Sender: TObject);
     procedure Rect_vendas_mensalMouseLeave(Sender: TObject);
@@ -102,10 +105,13 @@ type
     procedure img_atualizarMouseEnter(Sender: TObject);
     procedure img_atualizarMouseLeave(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
+    procedure Chart_vendas_por_mesMouseEnter(Sender: TObject);
+    procedure Chart_vendas_por_mesMouseLeave(Sender: TObject);
   private
     procedure Atualiza_dados;
     procedure Atualiza_Resumo_Mensal;
     procedure informacoesDiarias;
+    FUNCTION RetornaMes(numero_mes:Integer): String;
     { Private declarations }
   public
     { Public declarations }
@@ -181,21 +187,30 @@ begin
 end;
 
 procedure TFrm_principal.SpeedButton1Click(Sender: TObject);
+var I: Integer;
 begin
-  Series1.Clear;
-  Series1.addY(0,'');
-  Series1.addY(1200.50,'Jan');
-  Series1.addY(1300.00,'Fev');
-  Series1.addY(620.00,'Mar');
-  Series1.addY(880.00,'Abr');
-  Series1.addY(701.00,'Mai');
-  Series1.addY(664.50,'Jun');
-  Series1.addY(70,'Jul');
-  Series1.addY(20,'Ago');
-  Series1.addY(12,'Set');
-  Series1.addY(12,'Out');
-  Series1.addY(12,'Nov');
-  Series1.addY(12,'Dez');
+
+  ADOQuery_grafico.Close;
+  ADOQuery_grafico.SQL.Clear;
+  ADOQuery_grafico.SQL.Add('PR_HISTORICO_12MESES');
+  ADOQuery_grafico.Open;
+
+  Series2.Clear;
+  ADOQuery_grafico.First;
+
+  for I := 0 to 12 do
+  begin
+    FloatAnimation1.Stop;
+    Series2.add
+    (ADOQuery_grafico.FieldByName('TOTAL').AsCurrency,
+                 RetornaMes(ADOQuery_grafico.FieldByName('MES').AsInteger)+''#13''+
+                 ADOQuery_grafico.FieldByName('ANO').AsString
+                 );
+
+    FloatAnimation1.StopValue:= 105;
+    FloatAnimation1.Start;
+    ADOQuery_grafico.Next;
+  end;
 
 end;
 
@@ -291,6 +306,26 @@ begin
 
 end;
 
+procedure TFrm_principal.Chart_vendas_por_mesMouseEnter(Sender: TObject);
+begin
+  Anim_X_grafico.Inverse:= False;
+  Anim_X_grafico.Start;
+
+  Anim_Y_grafico.Inverse:= False;
+  Anim_Y_grafico.Start;
+  Chart_vendas_por_mes.Legend.VertSpacing:= 4;
+end;
+
+procedure TFrm_principal.Chart_vendas_por_mesMouseLeave(Sender: TObject);
+begin
+  Anim_X_grafico.Inverse:= True;
+  Anim_X_grafico.Start;
+
+  Anim_Y_grafico.Inverse:= True;
+  Anim_Y_grafico.Start;
+  Chart_vendas_por_mes.Legend.VertSpacing:= 2;
+end;
+
 procedure TFrm_principal.informacoesDiarias();
 begin
   ADOQuery_informacoes_diarias.Close;
@@ -301,6 +336,67 @@ begin
   Label_valor_hoje.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_informacoes_diarias.FieldByName('total').AsCurrency);
   Label_valo_tktMedio.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_informacoes_diarias.FieldByName('ticket').AsCurrency);
   Label_qtd.Text:= FormatCurr('####,###0.000',ADOQuery_informacoes_diarias.FieldByName('quantidade').AsCurrency);
+end;
+
+FUNCTION TFrm_principal.RetornaMes(numero_mes:Integer):String;
+var nome_mes: String;
+begin
+  case numero_mes of
+    1:begin
+      nome_mes:= 'Jan';
+    end;
+
+    2: begin
+      nome_mes:= 'Fev';
+    end;
+
+    3:begin
+      nome_mes:= 'Mar';
+    end;
+
+    4: begin
+      nome_mes:= 'Abr';
+    end;
+
+    5:begin
+      nome_mes:= 'Mai';
+    end;
+
+    6: begin
+      nome_mes:= 'Jun';
+    end;
+
+    7:begin
+      nome_mes:= 'Jul';
+    end;
+
+    8: begin
+      nome_mes:= 'Ago';
+    end;
+
+    9:begin
+      nome_mes:= 'Set';
+    end;
+
+    10: begin
+      nome_mes:= 'Out';
+    end;
+
+    11:begin
+      nome_mes:= 'Nov';
+    end;
+
+    12: begin
+      nome_mes:= 'Dez';
+    end;
+
+    else begin
+      nome_mes:= 'Não encontrado!';
+    end;
+
+  end;
+
+  Result:= nome_mes;
 end;
 
 end.
