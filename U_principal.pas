@@ -35,8 +35,8 @@ type
     Label_valor_receber: TLabel;
     Rect_meta_mensal: TRectangle;
     Rect_super_meta: TRectangle;
-    Label9: TLabel;
-    Label10: TLabel;
+    Label_titulo_meta: TLabel;
+    Label_titulo_supermeta: TLabel;
     Rect_toolbar: TRectangle;
     Label_usuario: TLabel;
     Rect_info_diaria: TRectangle;
@@ -86,11 +86,11 @@ type
     ADOQuery_informacoes_diarias: TADOQuery;
     Timer_info_diarias: TTimer;
     ADOQuery_grafico: TADOQuery;
-    SpeedButton1: TSpeedButton;
-    FloatAnimation1: TFloatAnimation;
+    Anima_inicio_grafico: TFloatAnimation;
     Series2: TLineSeries;
     Anim_X_grafico: TFloatAnimation;
     Anim_Y_grafico: TFloatAnimation;
+    ADOQuery_metas: TADOQuery;
     procedure FormShow(Sender: TObject);
     procedure Rect_vendas_mensalMouseEnter(Sender: TObject);
     procedure Rect_vendas_mensalMouseLeave(Sender: TObject);
@@ -104,14 +104,19 @@ type
     procedure Timer_info_diariasTimer(Sender: TObject);
     procedure img_atualizarMouseEnter(Sender: TObject);
     procedure img_atualizarMouseLeave(Sender: TObject);
-    procedure SpeedButton1Click(Sender: TObject);
     procedure Chart_vendas_por_mesMouseEnter(Sender: TObject);
     procedure Chart_vendas_por_mesMouseLeave(Sender: TObject);
   private
     procedure Atualiza_dados;
-    procedure Atualiza_Resumo_Mensal;
-    procedure informacoesDiarias;
+    procedure Atualiza_Resumo_Mensal();
+    procedure InformacoesDiarias;
     FUNCTION RetornaMes(numero_mes:Integer): String;
+    procedure Preenche_grafico;
+    procedure ThreadEnd(Sender: TObject);
+    procedure Busca_metas;
+    procedure CalculaMetas(Meta, Venda_total: Double; FloatAnimation:TFloatAnimation; Label_percentual:TLabel );
+    var Processo: String;
+        venda_total: Double;
     { Private declarations }
   public
     { Public declarations }
@@ -121,11 +126,136 @@ var
   Frm_principal: TFrm_principal;
 
 implementation
-
 {$R *.fmx}
+
+procedure TFrm_principal.FormShow(Sender: TObject);
+begin
+  //ABERTURA DO FORM QUE PREENCHE TODAS AS INFORMAÇÕES
+  DateEdit_inicial.Date := StartOfTheMonth(Now); // primeiro dia do mês atual
+  DateEdit_final.Date   := EndOfTheMonth(Now); // último dia do mês atual
+  Atualiza_dados();
+
+end;
+
+procedure TFrm_principal.Timer_info_diariasTimer(Sender: TObject);
+begin
+  //TIMER QUE ATUALIZA AS INFORMAÇÕES DIÁRIAS DE 1 EM 1 MINUTO
+  InformacoesDiarias();
+end;
+
+
+{$region 'Animações Painéis'}
+
+procedure TFrm_principal.Rect_vendas_mensalMouseEnter(Sender: TObject);
+begin
+  //ANIMA O MOVIMENTO DO PAINEL VENDAS MENSAL
+  Anim_X_mensal.Inverse:= False;
+  Anim_X_mensal.Start;
+
+  Anim_Y_mensal.Inverse:= False;
+  Anim_Y_mensal.Start;
+end;
+
+procedure TFrm_principal.Rect_vendas_mensalMouseLeave(Sender: TObject);
+begin
+  //ANIMA O MOVIMENTO DO PAINEL VENDAS MENSAL
+  Anim_X_mensal.Inverse:= True;
+  Anim_X_mensal.Start;
+
+  Anim_Y_mensal.Inverse:= True;
+  Anim_Y_mensal.Start;
+end;
+
+procedure TFrm_principal.Chart_vendas_por_mesMouseEnter(Sender: TObject);
+begin
+  //ANIMA O MOVIMENTO DO GRÁFICO
+  Anim_X_grafico.Inverse:= False;
+  Anim_X_grafico.Start;
+
+  Anim_Y_grafico.Inverse:= False;
+  Anim_Y_grafico.Start;
+  Chart_vendas_por_mes.Legend.VertSpacing:= 4;
+end;
+
+procedure TFrm_principal.Chart_vendas_por_mesMouseLeave(Sender: TObject);
+begin
+  //ANIMA O MOVIMENTO DO GRÁFICO
+  Anim_X_grafico.Inverse:= True;
+  Anim_X_grafico.Start;
+
+  Anim_Y_grafico.Inverse:= True;
+  Anim_Y_grafico.Start;
+  Chart_vendas_por_mes.Legend.VertSpacing:= 2;
+end;
+
+procedure TFrm_principal.Rect_contas_receberMouseEnter(Sender: TObject);
+begin
+  //ANIMA O MOVIMENTO DO PAINEL CONTAS A REECEBER
+  Anim_X_receber.Inverse:= False;
+  Anim_X_receber.Start;
+
+  Anim_Y_receber.Inverse:= False;
+  Anim_Y_receber.Start;
+end;
+
+procedure TFrm_principal.Rect_contas_receberMouseLeave(Sender: TObject);
+begin
+  //ANIMA O MOVIMENTO DO PAINEL CONTAS A RECEBER
+  Anim_X_receber.Inverse:= True;
+  Anim_X_receber.Start;
+
+  Anim_Y_receber.Inverse:= True;
+  Anim_Y_receber.Start;
+end;
+
+procedure TFrm_principal.Rect_contas_pagarMouseEnter(Sender: TObject);
+begin
+  //ANIMA O MOVIMENTO DO PAINEL CONTAS A PAGAR
+  Anim_X_pagar.Inverse:= False;
+  Anim_X_pagar.Start;
+
+  Anim_Y_pagar.Inverse:= False;
+  Anim_Y_pagar.Start;
+end;
+
+procedure TFrm_principal.Rect_contas_pagarMouseLeave(Sender: TObject);
+begin
+  //ANIMA O MOVIMENTO DO PAINEL CONTAS A PAGAR
+  Anim_X_pagar.Inverse:= True;
+  Anim_X_pagar.Start;
+
+  Anim_Y_pagar.Inverse:= True;
+  Anim_Y_pagar.Start;
+end;
+
+procedure TFrm_principal.Rect_lucroMouseEnter(Sender: TObject);
+begin
+  //ANIMA O MOVIMENTO DO PAINEL LUCRO
+  Anim_X_lucro.Inverse:= False;
+  Anim_X_lucro.Start;
+
+  Anim_Y_lucro.Inverse:= False;
+  Anim_Y_lucro.Start;
+end;
+
+procedure TFrm_principal.Rect_lucroMouseLeave(Sender: TObject);
+begin
+  //ANIMA O MOVIMENTO DO PAINEL LUCRO
+  Anim_X_lucro.Inverse:= True;
+  Anim_X_lucro.Start;
+
+  Anim_Y_lucro.Inverse:= True;
+  Anim_Y_lucro.Start;
+end;
+
+{$EndRegion 'Animações Painéis'}
+
+
+{$region 'Botão atualizar'}
 
 procedure TFrm_principal.img_atualizarClick(Sender: TObject);
 begin
+  //ATUALIZA A PÁGINA
   Atualiza_dados();
   Anim_grafico_meta.Start;
   Anim_grafico_superMeta.Start;
@@ -133,6 +263,7 @@ end;
 
 procedure TFrm_principal.img_atualizarMouseEnter(Sender: TObject);
 begin
+  //ANIMAÇÃO DO BOTÃO DE ATUALIZAR
   Anim_rotacao_btn.Inverse:= False;
   Anim_rotacao_btn.Start;
 
@@ -146,6 +277,7 @@ end;
 
 procedure TFrm_principal.img_atualizarMouseLeave(Sender: TObject);
 begin
+  //ANIMAÇÃO DO BOTÃO DE ATUALIZAR
   Anim_rotacao_btn.Inverse:= True;
   Anim_rotacao_btn.Start;
 
@@ -157,190 +289,229 @@ begin
   Anim_largura_rect.Start;
 end;
 
-procedure TFrm_principal.FormShow(Sender: TObject);
-begin
+{$EndRegion 'Botão atualizar'}
 
-  Anim_grafico_meta.StopValue:= 270;
-  Anim_grafico_superMeta.StopValue:= 170;
-  Anim_grafico_meta.Start;
-  Anim_grafico_superMeta.Start;
-  Atualiza_dados();
 
-end;
-
-procedure TFrm_principal.Rect_vendas_mensalMouseEnter(Sender: TObject);
-begin
-  Anim_X_mensal.Inverse:= False;
-  Anim_X_mensal.Start;
-
-  Anim_Y_mensal.Inverse:= False;
-  Anim_Y_mensal.Start;
-end;
-
-procedure TFrm_principal.Rect_vendas_mensalMouseLeave(Sender: TObject);
-begin
-  Anim_X_mensal.Inverse:= True;
-  Anim_X_mensal.Start;
-
-  Anim_Y_mensal.Inverse:= True;
-  Anim_Y_mensal.Start;
-end;
-
-procedure TFrm_principal.SpeedButton1Click(Sender: TObject);
-var I: Integer;
-begin
-
-  ADOQuery_grafico.Close;
-  ADOQuery_grafico.SQL.Clear;
-  ADOQuery_grafico.SQL.Add('PR_HISTORICO_12MESES');
-  ADOQuery_grafico.Open;
-
-  Series2.Clear;
-  ADOQuery_grafico.First;
-
-  for I := 0 to 12 do
-  begin
-    FloatAnimation1.Stop;
-    Series2.add
-    (ADOQuery_grafico.FieldByName('TOTAL').AsCurrency,
-                 RetornaMes(ADOQuery_grafico.FieldByName('MES').AsInteger)+''#13''+
-                 ADOQuery_grafico.FieldByName('ANO').AsString
-                 );
-
-    FloatAnimation1.StopValue:= 105;
-    FloatAnimation1.Start;
-    ADOQuery_grafico.Next;
-  end;
-
-end;
-
-procedure TFrm_principal.Timer_info_diariasTimer(Sender: TObject);
-begin
-  informacoesDiarias();
-end;
-
-procedure TFrm_principal.Rect_contas_receberMouseEnter(Sender: TObject);
-begin
-  Anim_X_receber.Inverse:= False;
-  Anim_X_receber.Start;
-
-  Anim_Y_receber.Inverse:= False;
-  Anim_Y_receber.Start;
-end;
-
-procedure TFrm_principal.Rect_contas_receberMouseLeave(Sender: TObject);
-begin
-  Anim_X_receber.Inverse:= True;
-  Anim_X_receber.Start;
-
-  Anim_Y_receber.Inverse:= True;
-  Anim_Y_receber.Start;
-end;
-
-procedure TFrm_principal.Rect_contas_pagarMouseEnter(Sender: TObject);
-begin
-  Anim_X_pagar.Inverse:= False;
-  Anim_X_pagar.Start;
-
-  Anim_Y_pagar.Inverse:= False;
-  Anim_Y_pagar.Start;
-end;
-
-procedure TFrm_principal.Rect_contas_pagarMouseLeave(Sender: TObject);
-begin
-  Anim_X_pagar.Inverse:= True;
-  Anim_X_pagar.Start;
-
-  Anim_Y_pagar.Inverse:= True;
-  Anim_Y_pagar.Start;
-end;
-
-procedure TFrm_principal.Rect_lucroMouseEnter(Sender: TObject);
-begin
-
-  Anim_X_lucro.Inverse:= False;
-  Anim_X_lucro.Start;
-
-  Anim_Y_lucro.Inverse:= False;
-  Anim_Y_lucro.Start;
-end;
-
-procedure TFrm_principal.Rect_lucroMouseLeave(Sender: TObject);
-begin
-  Anim_X_lucro.Inverse:= True;
-  Anim_X_lucro.Start;
-
-  Anim_Y_lucro.Inverse:= True;
-  Anim_Y_lucro.Start;
-end;
+{$REGION 'Procedures'}
 
 procedure TFrm_principal.Atualiza_dados();
+var Thread: TThread;
 begin
-  Atualiza_Resumo_Mensal();
-  informacoesDiarias();
+  //CHAMA AS PROCEDURES QUE ATUALIZAM AS INFORMAÇÕES DA TELA
+
+  InformacoesDiarias(); //THREAD PRINCIPAL
+
+  //THREAD 1
+  Thread:= TThread.CreateAnonymousThread(procedure
+  begin
+    Processo:= 'Painéis superiores';
+    Thread.Synchronize(nil, Atualiza_Resumo_Mensal);
+  end);
+  Thread.OnTerminate:= ThreadEnd;
+  Thread.Start;
+
+  //THREAD 2
+  Thread:= TThread.CreateAnonymousThread(procedure
+  begin
+    Processo:= 'Painéis superiores';
+    Thread.Synchronize(nil, Busca_metas);
+  end);
+  Thread.OnTerminate:= ThreadEnd;
+  Thread.Start;
+
+  Preenche_grafico(); //possui thread interna
+
 end;
 
 procedure TFrm_principal.Atualiza_Resumo_Mensal();
+var data_inicial, data_final: String;
 begin
+
+  data_inicial:= FormatDateTime('yyyy-mm-dd', StrToDate(DateEdit_inicial.Text));
+  data_final  := FormatDateTime('yyyy-mm-dd', StrToDate(DateEdit_final.Text));
+
+  //BUSCA O VALOR TOTAL DAS VENDAS NO PERÍODO SELECIONADO
   ADOQuery_painel_mensal.Close;
   ADOQuery_painel_mensal.SQL.Clear;
   ADOQuery_painel_mensal.SQL.Add('PR_TOTAL_VENDAS_PERIODO '
-                                +chr(39)+DateToStr(DateEdit_inicial.Date)+chr(39)+', '
-                                +chr(39)+DateToStr(DateEdit_final.Date)+chr(39)
+                                +chr(39)+data_inicial+chr(39)+', '
+                                +chr(39)+data_final+chr(39)
                                 );
   ADOQuery_painel_mensal.Open;
 
   Label_valor_mensal.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_painel_mensal.FieldByName('total').AsCurrency);
+  venda_total:= ADOQuery_painel_mensal.FieldByName('total').AsCurrency;
+{----------------------------------------------------------------------------------------------------------------------------}
 
-
+  //BUSCA O LUCRO OBTIDO COM VENDAS NO PERÍODO SELECIONADO
   ADOQuery_painel_mensal.Close;
   ADOQuery_painel_mensal.SQL.Clear;
   ADOQuery_painel_mensal.SQL.Add('PR_CALCULA_LUCRO '
-                                +chr(39)+DateToStr(DateEdit_inicial.Date)+chr(39)+', '
-                                +chr(39)+DateToStr(DateEdit_final.Date)+chr(39)
+                                +chr(39)+data_inicial+chr(39)+', '
+                                +chr(39)+data_final+chr(39)
                                 );
   ADOQuery_painel_mensal.Open;
 
   Label_valor_lucro.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_painel_mensal.FieldByName('lucro').AsCurrency);
 
-
 end;
 
-procedure TFrm_principal.Chart_vendas_por_mesMouseEnter(Sender: TObject);
+procedure TFrm_principal.InformacoesDiarias();
 begin
-  Anim_X_grafico.Inverse:= False;
-  Anim_X_grafico.Start;
-
-  Anim_Y_grafico.Inverse:= False;
-  Anim_Y_grafico.Start;
-  Chart_vendas_por_mes.Legend.VertSpacing:= 4;
-end;
-
-procedure TFrm_principal.Chart_vendas_por_mesMouseLeave(Sender: TObject);
-begin
-  Anim_X_grafico.Inverse:= True;
-  Anim_X_grafico.Start;
-
-  Anim_Y_grafico.Inverse:= True;
-  Anim_Y_grafico.Start;
-  Chart_vendas_por_mes.Legend.VertSpacing:= 2;
-end;
-
-procedure TFrm_principal.informacoesDiarias();
-begin
+  //BUSCA AS INFORMAÇÕES PARA O PAINEL DE INFORMAÇÕES DIÁRIAS
   ADOQuery_informacoes_diarias.Close;
   ADOQuery_informacoes_diarias.SQL.Clear;
   ADOQuery_informacoes_diarias.SQL.Add('PR_DASH_INFORMACOES_DIARIAS ');
   ADOQuery_informacoes_diarias.Open;
 
+  //PREENCHE O LABEL DE INFORMAÇÕES DIÁRIAS NO RODAPÉ DA PÁGINA
   Label_valor_hoje.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_informacoes_diarias.FieldByName('total').AsCurrency);
   Label_valo_tktMedio.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_informacoes_diarias.FieldByName('ticket').AsCurrency);
   Label_qtd.Text:= FormatCurr('####,###0.000',ADOQuery_informacoes_diarias.FieldByName('quantidade').AsCurrency);
 end;
 
+PROCEDURE TFrm_principal.Preenche_grafico();
+var Thread: TThread;
+begin
+  Thread:= TThread.CreateAnonymousThread(procedure
+  begin
+      //BUSCA O TOTAL DAS VENDAS DOS ÚLTIMOS 12 MESES
+      ADOQuery_grafico.Close;
+      ADOQuery_grafico.SQL.Clear;
+      ADOQuery_grafico.SQL.Add('PR_HISTORICO_12MESES');
+      ADOQuery_grafico.Open;
+
+      Processo:= 'Preenche Gráfico';
+
+      TThread.Synchronize(Thread.CurrentThread, procedure
+      var I: Integer;
+      begin
+        Series2.Clear;
+        ADOQuery_grafico.First;
+
+        //PREENCHE O GRÁFICO
+        for I := 0 to 12 do
+        begin
+          Anima_inicio_grafico.Stop;
+          Series2.add(ADOQuery_grafico.FieldByName('TOTAL').AsCurrency,
+                      RetornaMes(ADOQuery_grafico.FieldByName('MES').AsInteger)+''#13''+
+                      ADOQuery_grafico.FieldByName('ANO').AsString
+                      );
+
+          //ANIMAÇÃO DE PREENCHIMETNO DO GRÁFICO
+          Anima_inicio_grafico.StopValue:= 105;
+          Anima_inicio_grafico.Start;
+          ADOQuery_grafico.Next;
+        end;
+      end);
+
+  end);
+
+  //CAPTURA UM POSSÍVEL ERRO AO TERMINAR A THREAD
+  Thread.OnTerminate:= ThreadEnd;
+  Thread.Start;
+
+end;
+
+procedure TFrm_principal.ThreadEnd(Sender: TObject);
+begin
+
+  //CONTROLA O RETORNO DO FIM DA THREAD
+  if Assigned(TThread(Sender).FatalException) then begin
+    ShowMessage('Erro em: '+Processo+' - '+Exception(TThread(Sender).FatalException).Message);
+  end
+
+end;
+
+
+PROCEDURE TFrm_principal.Busca_metas();
+var mes, ano: Integer;
+    meta, super_meta: Double;
+begin
+  if MonthOf(DateEdit_inicial.Date) <> MonthOf(DateEdit_final.Date) then begin
+
+    Label_titulo_meta.Text:= 'Meta';
+    Label_titulo_supermeta.Text:= 'Super Meta';
+
+    CalculaMetas(0, 0, Anim_grafico_meta, Label_percentual_Meta);
+    CalculaMetas(0, 0, Anim_grafico_superMeta, Label_percentual_superMeta);
+
+    Label_valor_meta.Text     := 'Período selecionado inválido';
+    Label_valor_superMeta.Text:= 'Período selecionado inválido';
+
+    ShowMessage('As informações de Meta e Supermeta só serão exibidas se '+
+                'o perído selecionado da data inicial e final forem dentro do mesmo mês.');
+
+
+  end else begin
+
+    meta:= 0;
+    super_meta:= 0;
+    mes:= MonthOf(DateEdit_inicial.Date);
+    ano:= YearOf(DateEdit_inicial.Date);
+
+    ADOQuery_metas.Close;
+    ADOQuery_metas.SQL.Clear;
+    ADOQuery_metas.SQL.Add('PR_BUSCA_METAS '
+                          +chr(39)+IntToStr(mes)+chr(39)+', '
+                          +chr(39)+IntToStr(ano)+chr(39)+', '
+                          +chr(39)+'2020'+chr(39));
+    ADOQuery_metas.Open;
+
+    //VALIDA SE RETORNOU META
+    if ADOQuery_metas.FieldByName('META').AsString = '' then begin
+      Label_valor_meta.Text:= 'Nenhuma Meta cadastrada';
+      meta:= 0;
+    end else begin
+      Label_valor_meta.Text:= 'Valor da meta: R$'+FormatCurr('####,##0.00',ADOQuery_metas.FieldByName('META').AsCurrency);
+      meta:= ADOQuery_metas.FieldByName('META').AsCurrency;
+    end;
+
+    //VALIDA SE RETORNOU SUPER META
+    if ADOQuery_metas.FieldByName('SUPER_META').AsString = '' then begin
+      Label_valor_superMeta.Text:= 'Nenhuma Super Meta cadastrada';
+      super_meta:= 0;
+    end else begin
+      Label_valor_superMeta.Text:= 'Valor da Super Meta: R$'+FormatCurr('####,##0.00', ADOQuery_metas.FieldByName('SUPER_META').AsCurrency);
+      super_meta:= ADOQuery_metas.FieldByName('SUPER_META').AsCurrency;
+    end;
+
+    CalculaMetas(meta, venda_total, Anim_grafico_meta, Label_percentual_Meta);
+    CalculaMetas(super_meta, venda_total, Anim_grafico_superMeta, Label_percentual_superMeta);
+
+    Label_titulo_meta.Text:= 'Meta: '+mes.ToString+'/'+ano.ToString;
+    Label_titulo_supermeta.Text:= 'Super meta: '+mes.ToString+'/'+ano.ToString;
+  end;
+
+end;
+
+procedure TFrm_principal.CalculaMetas(Meta, Venda_total: Double; FloatAnimation:TFloatAnimation; Label_percentual:TLabel );
+var perc_meta: Double;
+begin
+  if Meta = 0 then begin
+    Label_percentual.Text:= '0%';
+    FloatAnimation.StopValue:= 0;
+  end else begin
+
+    perc_meta:= (Venda_total * 100) / Meta;
+    Label_percentual.Text:= FormatFloat('#0.0',perc_meta)+ '%';
+    FloatAnimation.StopValue:= ((perc_meta * 360) / 100);
+
+  end;
+
+  FloatAnimation.Start;
+
+end;
+
+{$ENDREGION}
+
+
+{$REGION 'Functions'}
+
 FUNCTION TFrm_principal.RetornaMes(numero_mes:Integer):String;
 var nome_mes: String;
 begin
+  //RETORNA A ABREVIAÇÃO DO MÊS ATUAL DE ACORDO COM O NÚMERO DO MÊS
   case numero_mes of
     1:begin
       nome_mes:= 'Jan';
@@ -398,5 +569,7 @@ begin
 
   Result:= nome_mes;
 end;
+
+{$ENDREGION}
 
 end.
