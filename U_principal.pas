@@ -127,6 +127,7 @@ var
 
 implementation
 {$R *.fmx}
+uses U_aviso;
 
 procedure TFrm_principal.FormShow(Sender: TObject);
 begin
@@ -439,9 +440,15 @@ begin
     Label_valor_meta.Text     := 'Período selecionado inválido';
     Label_valor_superMeta.Text:= 'Período selecionado inválido';
 
-    ShowMessage('As informações de Meta e Supermeta só serão exibidas se '+
-                'o perído selecionado da data inicial e final forem dentro do mesmo mês.');
+    {ShowMessage('As informações de Meta e Supermeta só serão exibidas se '+
+                'o perído selecionado da data inicial e final forem dentro do mesmo mês.');}
 
+    {Frm_aviso:= TFrm_aviso.Create(Application);
+    Frm_aviso.ShowModal;}
+
+    //Aviso('AVISO', 'MENSAGEM DE TEXTO DE ALERTA');
+    Aviso('ALERTA', 'MENSAGEM DE TEXTO DE ALERTA');
+    //Aviso('CONCLUÍDO', 'MENSAGEM DE TEXTO DE ALERTA');
 
   end else begin
 
