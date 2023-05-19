@@ -37,7 +37,7 @@ type
     Rect_super_meta: TRectangle;
     Label_titulo_meta: TLabel;
     Label_titulo_supermeta: TLabel;
-    Rect_toolbar: TRectangle;
+    ÿ: TRectangle;
     Label_usuario: TLabel;
     Rect_info_diaria: TRectangle;
     React_vendas_hoje: TRoundRect;
@@ -314,7 +314,8 @@ begin
   //THREAD 2
   Thread:= TThread.CreateAnonymousThread(procedure
   begin
-    Processo:= 'Painéis superiores';
+    Thread.Sleep(500);
+    Processo:= 'Gráfico Metas';
     Thread.Synchronize(nil, Busca_metas);
   end);
   Thread.OnTerminate:= ThreadEnd;
@@ -440,14 +441,10 @@ begin
     Label_valor_meta.Text     := 'Período selecionado inválido';
     Label_valor_superMeta.Text:= 'Período selecionado inválido';
 
-    {ShowMessage('As informações de Meta e Supermeta só serão exibidas se '+
-                'o perído selecionado da data inicial e final forem dentro do mesmo mês.');}
 
-    {Frm_aviso:= TFrm_aviso.Create(Application);
-    Frm_aviso.ShowModal;}
-
-    //Aviso('AVISO', 'MENSAGEM DE TEXTO DE ALERTA');
-    Aviso('ALERTA', 'MENSAGEM DE TEXTO DE ALERTA');
+    Aviso('AVISO', 'As informações de Meta e Supermeta só serão exibidas se '+
+                   'o perído selecionado da data inicial e final forem dentro do mesmo mês.');
+    //Aviso('ALERTA', 'MENSAGEM DE TEXTO DE ALERTA');
     //Aviso('CONCLUÍDO', 'MENSAGEM DE TEXTO DE ALERTA');
 
   end else begin
@@ -501,7 +498,7 @@ begin
   end else begin
 
     perc_meta:= (Venda_total * 100) / Meta;
-    Label_percentual.Text:= FormatFloat('#0.0',perc_meta)+ '%';
+    Label_percentual.Text:= FormatFloat('#0.0',perc_meta)+ '%';    
     FloatAnimation.StopValue:= ((perc_meta * 360) / 100);
 
   end;

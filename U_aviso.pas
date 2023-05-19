@@ -22,6 +22,7 @@ type
     Text_buttom2: TText;
     Anima2_X: TFloatAnimation;
     Anima2_Y: TFloatAnimation;
+    Rec_buttons: TRectangle;
     procedure Rec_Buttom1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Rec_Buttom2Click(Sender: TObject);
@@ -100,8 +101,8 @@ begin
       2: begin //CONCLUÍDO
           Text_msg.Text              := F_mensagem;
           Label_titulo.Text          := F_titulo;
-          Rec_Background.Stroke.Color:= TAlphaColorRec.Green;
-          Rec_Buttom1.Stroke.Color   := TAlphaColorRec.Green;
+          Rec_Background.Stroke.Color:= TAlphaColor($FF71CA5F);
+          Rec_Buttom1.Stroke.Color   := TAlphaColor($FF71CA5F);
           Rec_Buttom1.Visible        := True;
           Text_buttom1.Text          := 'OK';
           Rec_Buttom2.Visible        := False;
