@@ -106,6 +106,7 @@ type
     procedure img_atualizarMouseLeave(Sender: TObject);
     procedure Chart_vendas_por_mesMouseEnter(Sender: TObject);
     procedure Chart_vendas_por_mesMouseLeave(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     procedure Atualiza_dados;
     procedure Atualiza_Resumo_Mensal();
@@ -128,6 +129,12 @@ var
 implementation
 {$R *.fmx}
 uses U_aviso;
+
+procedure TFrm_principal.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Action:= TCloseAction.caFree;
+  Frm_principal:= nil;
+end;
 
 procedure TFrm_principal.FormShow(Sender: TObject);
 begin
