@@ -31137,11 +31137,11 @@ object Frm_Splash: TFrm_Splash
   object Label_percentual: TLabel
     StyledSettings = [Family, FontColor]
     Position.X = 409.000000000000000000
-    Position.Y = 489.000000000000000000
+    Position.Y = 481.000000000000000000
     Size.Width = 81.000000000000000000
-    Size.Height = 29.000000000000000000
+    Size.Height = 36.000000000000000000
     Size.PlatformDefault = False
-    TextSettings.Font.Size = 20.000000000000000000
+    TextSettings.Font.Size = 25.000000000000000000
     TextSettings.Font.StyleExt = {00070000000000000004000000}
     TextSettings.HorzAlign = Center
     Text = '0'

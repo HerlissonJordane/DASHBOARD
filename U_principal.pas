@@ -8,7 +8,7 @@ uses
   FMXTee.Series, FMXTee.Procs, FMXTee.Chart, FMX.Objects,
   FMX.Controls.Presentation, FMX.StdCtrls, FMX.DateTimeCtrls, FMX.ListBox,
   FMX.Controls3D, FMXTee.Chart3D, FMX.Ani, System.ImageList, FMX.ImgList,
-  Data.DB, Data.Win.ADODB, DateUtils;
+  Data.DB, Data.Win.ADODB, DateUtils, System.IOUtils;
 
 type
   TFrm_principal = class(TForm)
@@ -107,6 +107,7 @@ type
     procedure Chart_vendas_por_mesMouseEnter(Sender: TObject);
     procedure Chart_vendas_por_mesMouseLeave(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCreate(Sender: TObject);
   private
     procedure Atualiza_dados;
     procedure Atualiza_Resumo_Mensal();
@@ -117,10 +118,12 @@ type
     procedure Busca_metas;
     procedure CalculaMetas(Meta, Venda_total: Double; FloatAnimation:TFloatAnimation; Label_percentual:TLabel );
     var Processo: String;
-        venda_total: Double;
+        venda_total, meta, super_meta: Double;
+        String_connection: TStringList;
     { Private declarations }
   public
     { Public declarations }
+    var codigo_loja: String;
   end;
 
 var
@@ -130,10 +133,30 @@ implementation
 {$R *.fmx}
 uses U_aviso;
 
-procedure TFrm_principal.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TFrm_principal.FormCreate(Sender: TObject);
+var Query: TADOQuery;
 begin
-  Action:= TCloseAction.caFree;
-  Frm_principal:= nil;
+  //CRIA A CONEXÃO PEGANDO STRING DO CONFEX
+  if Not(ADOConnection1.Connected) then begin
+
+    String_connection:= TStringList.Create;
+    String_connection.LoadFromFile('D:\Programas Desenvolvidos\SIPAK - Sistema de automação comercial\PROJETOS\GIT-SIPAK\confex');
+    ADOConnection1.ConnectionString:= String_connection.Text;
+    ADOConnection1.Connected:= True;
+  end;
+
+  //CONSULTA CÓDIGO DA LOJA LOGADA
+  Query:= TADOQuery.Create(nil);
+  Query.Connection:= ADOConnection1;
+  Query.Close;
+  Query.SQL.Clear;
+  Query.SQL.Add('SELECT LJ_ID FROM CAD_LJ');
+  Query.Open;
+
+  codigo_loja:= Query.FieldByName('lj_id').AsString;
+
+  String_connection.Free;
+  Query.Free;
 end;
 
 procedure TFrm_principal.FormShow(Sender: TObject);
@@ -143,6 +166,13 @@ begin
   DateEdit_final.Date   := EndOfTheMonth(Now); // último dia do mês atual
   Atualiza_dados();
 
+end;
+
+procedure TFrm_principal.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  ADOConnection1.Connected:= False;
+  Action:= TCloseAction.caFree;
+  Frm_principal:= nil;
 end;
 
 procedure TFrm_principal.Timer_info_diariasTimer(Sender: TObject);
@@ -335,7 +365,7 @@ end;
 procedure TFrm_principal.Atualiza_Resumo_Mensal();
 var data_inicial, data_final: String;
 begin
-
+  venda_total:= 0;
   data_inicial:= FormatDateTime('yyyy-mm-dd', StrToDate(DateEdit_inicial.Text));
   data_final  := FormatDateTime('yyyy-mm-dd', StrToDate(DateEdit_final.Text));
 
@@ -435,7 +465,6 @@ end;
 
 PROCEDURE TFrm_principal.Busca_metas();
 var mes, ano: Integer;
-    meta, super_meta: Double;
 begin
   if MonthOf(DateEdit_inicial.Date) <> MonthOf(DateEdit_final.Date) then begin
 
@@ -466,7 +495,7 @@ begin
     ADOQuery_metas.SQL.Add('PR_BUSCA_METAS '
                           +chr(39)+IntToStr(mes)+chr(39)+', '
                           +chr(39)+IntToStr(ano)+chr(39)+', '
-                          +chr(39)+'2020'+chr(39));
+                          +chr(39)+codigo_loja+chr(39));
     ADOQuery_metas.Open;
 
     //VALIDA SE RETORNOU META
@@ -505,13 +534,12 @@ begin
   end else begin
 
     perc_meta:= (Venda_total * 100) / Meta;
-    Label_percentual.Text:= FormatFloat('#0.0',perc_meta)+ '%';    
+    Label_percentual.Text:= FormatFloat('#0.0',perc_meta)+ '%';
     FloatAnimation.StopValue:= ((perc_meta * 360) / 100);
 
   end;
 
   FloatAnimation.Start;
-
 end;
 
 {$ENDREGION}
