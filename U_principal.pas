@@ -37,7 +37,7 @@ type
     Rect_super_meta: TRectangle;
     Label_titulo_meta: TLabel;
     Label_titulo_supermeta: TLabel;
-    ÿ: TRectangle;
+    Rect_toolbar: TRectangle;
     Label_usuario: TLabel;
     Rect_info_diaria: TRectangle;
     React_vendas_hoje: TRoundRect;
