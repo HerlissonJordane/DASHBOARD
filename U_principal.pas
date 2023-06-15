@@ -212,7 +212,7 @@ begin
 
   Anim_Y_grafico.Inverse:= False;
   Anim_Y_grafico.Start;
-  Chart_vendas_por_mes.Legend.VertSpacing:= 4;
+  //Chart_vendas_por_mes.Legend.VertSpacing:= 4;
 end;
 
 procedure TFrm_principal.Chart_vendas_por_mesMouseLeave(Sender: TObject);
@@ -223,7 +223,7 @@ begin
 
   Anim_Y_grafico.Inverse:= True;
   Anim_Y_grafico.Start;
-  Chart_vendas_por_mes.Legend.VertSpacing:= 2;
+  //Chart_vendas_por_mes.Legend.VertSpacing:= 2;
 end;
 
 procedure TFrm_principal.Rect_contas_receberMouseEnter(Sender: TObject);
@@ -346,7 +346,10 @@ begin
     Thread.Synchronize(nil, Atualiza_Resumo_Mensal);
   end);
   Thread.OnTerminate:= ThreadEnd;
+  Thread.FreeOnTerminate:= False;
   Thread.Start;
+  Thread.WaitFor;
+  Thread.Free;
 
   //THREAD 2
   Thread:= TThread.CreateAnonymousThread(procedure
@@ -357,6 +360,8 @@ begin
   end);
   Thread.OnTerminate:= ThreadEnd;
   Thread.Start;
+  //Thread.Free;
+  //Thread_metas.WaitFor;
 
   Preenche_grafico(); //possui thread interna
 
