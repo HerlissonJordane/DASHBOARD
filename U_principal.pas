@@ -98,6 +98,13 @@ type
     RB_dataSelecionada: TRadioButton;
     Rect_config: TCalloutRectangle;
     Rect_separacao: TRectangle;
+    Btn_configPagar: TCircle;
+    Rect_config_pagar: TCalloutRectangle;
+    Rectangle1: TRectangle;
+    RB_todasAbertoPagar: TRadioButton;
+    RB_dataSelecionadaPagar: TRadioButton;
+    RB_emissaoPagar: TRadioButton;
+    RB_vencimentoPagar: TRadioButton;
     procedure FormShow(Sender: TObject);
     procedure Rect_vendas_mensalMouseEnter(Sender: TObject);
     procedure Rect_vendas_mensalMouseLeave(Sender: TObject);
@@ -116,6 +123,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure Btn_configReceberClick(Sender: TObject);
+    procedure Btn_configPagarClick(Sender: TObject);
   private
     procedure Atualiza_dados;
     procedure Atualiza_Resumo_Mensal();
@@ -232,6 +240,17 @@ begin
   Anim_Y_grafico.Inverse:= True;
   Anim_Y_grafico.Start;
   //Chart_vendas_por_mes.Legend.VertSpacing:= 2;
+end;
+
+procedure TFrm_principal.Btn_configPagarClick(Sender: TObject);
+begin
+  if Rect_config_pagar.Visible then begin
+    Rect_config_pagar.Visible:= False;
+    Rect_config_pagar.Align:= TAlignLayout.None;
+  end else begin
+    Rect_config_pagar.Visible:= True;
+    Rect_config_pagar.Align:= TAlignLayout.Top;
+  end;
 end;
 
 procedure TFrm_principal.Btn_configReceberClick(Sender: TObject);
@@ -444,6 +463,34 @@ begin
   ADOQuery_painel_mensal.Open;
 
   Label_valor_receber.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_painel_mensal.FieldByName('saldo').AsCurrency);
+
+{----------------------------------------------------------------------------------------------------------------------------}
+  //BUSCA O VALOR DO CONTAS A PAGAR
+
+  if RB_emissaoPagar.IsChecked then begin
+    tipo_data:= '1'; //DATA EMISSÃO
+  end else begin
+    tipo_data:= '0'; //DATA VENCIMENTO
+  end;
+
+  if RB_dataSelecionadaPagar.IsChecked then begin
+    periodo_data:= '0'; //PERÍODO DE DATA
+  end else begin
+    periodo_data:= '1'; //TODAS EM ABERTO ATÉ A DATA FINAL
+  end;
+
+  ADOQuery_painel_mensal.Close;
+  ADOQuery_painel_mensal.SQL.Clear;
+  ADOQuery_painel_mensal.SQL.Add('PR_TOTAL_CONTAS_PAGAR '
+                                +chr(39)+data_inicial+chr(39)+', '
+                                +chr(39)+data_final+chr(39)+', '
+                                +chr(39)+codigo_loja+chr(39)+', '
+                                +chr(39)+tipo_data+chr(39)+', '
+                                +chr(39)+periodo_data+chr(39)
+                                );
+  ADOQuery_painel_mensal.Open;
+
+  Label_valor_pagar.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_painel_mensal.FieldByName('saldo').AsCurrency);
 end;
 
 procedure TFrm_principal.InformacoesDiarias();
