@@ -91,6 +91,13 @@ type
     Anim_X_grafico: TFloatAnimation;
     Anim_Y_grafico: TFloatAnimation;
     ADOQuery_metas: TADOQuery;
+    Btn_configReceber: TCircle;
+    RB_vencimento: TRadioButton;
+    RB_dataEmissao: TRadioButton;
+    RB_todasAberto: TRadioButton;
+    RB_dataSelecionada: TRadioButton;
+    Rect_config: TCalloutRectangle;
+    Rect_separacao: TRectangle;
     procedure FormShow(Sender: TObject);
     procedure Rect_vendas_mensalMouseEnter(Sender: TObject);
     procedure Rect_vendas_mensalMouseLeave(Sender: TObject);
@@ -108,6 +115,7 @@ type
     procedure Chart_vendas_por_mesMouseLeave(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
+    procedure Btn_configReceberClick(Sender: TObject);
   private
     procedure Atualiza_dados;
     procedure Atualiza_Resumo_Mensal();
@@ -226,6 +234,18 @@ begin
   //Chart_vendas_por_mes.Legend.VertSpacing:= 2;
 end;
 
+procedure TFrm_principal.Btn_configReceberClick(Sender: TObject);
+begin
+  if Rect_config.Visible then begin
+    Rect_config.Visible:= False;
+    Rect_config.Align:= TAlignLayout.None;
+  end else begin
+    Rect_config.Visible:= True;
+    Rect_config.Align:= TAlignLayout.Top;
+  end;
+
+end;
+
 procedure TFrm_principal.Rect_contas_receberMouseEnter(Sender: TObject);
 begin
   //ANIMA O MOVIMENTO DO PAINEL CONTAS A REECEBER
@@ -339,7 +359,7 @@ begin
 
   InformacoesDiarias(); //THREAD PRINCIPAL
 
-  //THREAD 1
+  //THREAD 1 --INFORMAÇÕES PAINÉIS SUPERIORES
   Thread:= TThread.CreateAnonymousThread(procedure
   begin
     Processo:= 'Painéis superiores';
@@ -351,7 +371,7 @@ begin
   Thread.WaitFor;
   Thread.Free;
 
-  //THREAD 2
+  //THREAD 2  -- PAINEL DE METAS
   Thread:= TThread.CreateAnonymousThread(procedure
   begin
     Thread.Sleep(500);
@@ -368,7 +388,7 @@ begin
 end;
 
 procedure TFrm_principal.Atualiza_Resumo_Mensal();
-var data_inicial, data_final: String;
+var data_inicial, data_final, tipo_data, periodo_data: String;
 begin
   venda_total:= 0;
   data_inicial:= FormatDateTime('yyyy-mm-dd', StrToDate(DateEdit_inicial.Text));
@@ -397,7 +417,33 @@ begin
   ADOQuery_painel_mensal.Open;
 
   Label_valor_lucro.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_painel_mensal.FieldByName('lucro').AsCurrency);
+{----------------------------------------------------------------------------------------------------------------------------}
+  //BUSCA O VALOR DO CONTAS A RECEBER
 
+  if RB_dataEmissao.IsChecked then begin
+    tipo_data:= '1'; //DATA EMISSÃO
+  end else begin
+    tipo_data:= '0'; //DATA VENCIMENTO
+  end;
+
+  if RB_dataSelecionada.IsChecked then begin
+    periodo_data:= '0'; //PERÍODO DE DATA
+  end else begin
+    periodo_data:= '1'; //TODAS EM ABERTO ATÉ A DATA FINAL
+  end;
+
+  ADOQuery_painel_mensal.Close;
+  ADOQuery_painel_mensal.SQL.Clear;
+  ADOQuery_painel_mensal.SQL.Add('PR_TOTAL_CONTAS_RECEBER '
+                                +chr(39)+data_inicial+chr(39)+', '
+                                +chr(39)+data_final+chr(39)+', '
+                                +chr(39)+codigo_loja+chr(39)+', '
+                                +chr(39)+tipo_data+chr(39)+', '
+                                +chr(39)+periodo_data+chr(39)
+                                );
+  ADOQuery_painel_mensal.Open;
+
+  Label_valor_receber.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_painel_mensal.FieldByName('saldo').AsCurrency);
 end;
 
 procedure TFrm_principal.InformacoesDiarias();
