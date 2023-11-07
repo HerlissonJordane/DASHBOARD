@@ -453,7 +453,7 @@ begin
 
   ADOQuery_painel_mensal.Close;
   ADOQuery_painel_mensal.SQL.Clear;
-  ADOQuery_painel_mensal.SQL.Add('PR_TOTAL_CONTAS_RECEBER '
+  ADOQuery_painel_mensal.SQL.Add('PR_TOTAL_CONTAS_RECEBER_DASH '
                                 +chr(39)+data_inicial+chr(39)+', '
                                 +chr(39)+data_final+chr(39)+', '
                                 +chr(39)+codigo_loja+chr(39)+', '
@@ -481,7 +481,7 @@ begin
 
   ADOQuery_painel_mensal.Close;
   ADOQuery_painel_mensal.SQL.Clear;
-  ADOQuery_painel_mensal.SQL.Add('PR_TOTAL_CONTAS_PAGAR '
+  ADOQuery_painel_mensal.SQL.Add('PR_TOTAL_CONTAS_PAGAR_DASH '
                                 +chr(39)+data_inicial+chr(39)+', '
                                 +chr(39)+data_final+chr(39)+', '
                                 +chr(39)+codigo_loja+chr(39)+', '
