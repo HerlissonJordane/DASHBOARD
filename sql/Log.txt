@@ -1,0 +1,21 @@
+ 
+Script CR_PR_BUSCA_METAS.sql executado com sucesso 
+Script CR_PR_CALCULA_LUCRO.sql executado com sucesso 
+Script CR_PR_DASH_INFORMACOES_DIARIAS.sql executado com sucesso 
+Script CR_PR_HISTORICO_12MESES.sql executado com sucesso 
+Mensagem 3701, N°vel 11, Estado 5, Servidor SIPAK, Linha 2
+N∆o Ç poss°vel 'Descartar' o procedimento 'PR_TOTAL_CONTAS_PAGAR_DASH', pois ele n∆o existe ou vocà n∆o tem permiss∆o.
+Script CR_PR_TOTAL_CONTAS_PAGAR_DASH.sql executado com sucesso 
+Mensagem 3701, N°vel 11, Estado 5, Servidor SIPAK, Linha 2
+N∆o Ç poss°vel 'Descartar' o procedimento 'PR_TOTAL_CONTAS_RECEBER_DASH', pois ele n∆o existe ou vocà n∆o tem permiss∆o.
+Script CR_PR_TOTAL_CONTAS_RECEBER_DASH.sql executado com sucesso 
+Script CR_PR_TOTAL_VENDAS_PERIODO.sql executado com sucesso 
+Mensagem 3701, N°vel 11, Estado 5, Servidor SIPAK, Linha 2
+N∆o Ç poss°vel 'Descartar' o exibiá∆o 'VW_CONTAS_PAGAR', pois ele n∆o existe ou vocà n∆o tem permiss∆o.
+Script CR_VW_CONTAS_PAGAR.sql executado com sucesso 
+Mensagem 3701, N°vel 11, Estado 5, Servidor SIPAK, Linha 2
+N∆o Ç poss°vel 'Descartar' o exibiá∆o 'VW_CONTAS_RECEBER', pois ele n∆o existe ou vocà n∆o tem permiss∆o.
+Script CR_VW_CONTAS_RECEBER.sql executado com sucesso 
+Script CR_VW_METAS_LOJA.sql executado com sucesso 
+Script CR_VW_TOTAL_VENDAS_COM_CUSTO.sql executado com sucesso 
+Script CR_VW_TOTAL_VENDAS_POR_DIA.sql executado com sucesso 

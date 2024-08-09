@@ -133,6 +133,7 @@ type
     procedure ThreadEnd(Sender: TObject);
     procedure Busca_metas;
     procedure CalculaMetas(Meta, Venda_total: Double; FloatAnimation:TFloatAnimation; Label_percentual:TLabel );
+    function Local_do_aplicativo: string;
     var Processo: String;
         venda_total, meta, super_meta: Double;
         String_connection: TStringList;
@@ -156,7 +157,13 @@ begin
   if Not(ADOConnection1.Connected) then begin
 
     String_connection:= TStringList.Create;
-    String_connection.LoadFromFile('D:\Programas Desenvolvidos\SIPAK - Sistema de automação comercial\PROJETOS\GIT-SIPAK\confex');
+    if FileExists(Local_do_aplicativo+'confex') then
+    begin
+      String_connection.LoadFromFile(Local_do_aplicativo+'confex');
+    end else
+    begin
+      String_connection.LoadFromFile('D:\Programas Desenvolvidos\SIPAK - Sistema de automação comercial\PROJETOS\GIT-SIPAK\confex');
+    end;
     ADOConnection1.ConnectionString:= String_connection.Text;
     ADOConnection1.Connected:= True;
   end;
@@ -705,6 +712,11 @@ begin
   end;
 
   Result:= nome_mes;
+end;
+
+function TFrm_principal.Local_do_aplicativo: string;
+begin
+  Result:= ExtractFilePath(ParamStr(0));
 end;
 
 {$ENDREGION}
