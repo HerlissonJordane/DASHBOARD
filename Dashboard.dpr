@@ -6,7 +6,8 @@ uses
   U_principal in 'U_principal.pas' {Frm_principal},
   U_aviso in 'U_aviso.pas' {Frm_aviso},
   U_splash in 'U_splash.pas' {Frm_Splash},
-  U_login in 'U_login.pas' {Frm_login};
+  U_login in 'U_login.pas' {Frm_login},
+  Frame_Vendedores in 'Frame_Vendedores.pas' {F_vendedores: TFrame};
 
 {$R *.res}
 

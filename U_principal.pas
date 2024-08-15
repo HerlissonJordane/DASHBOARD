@@ -8,7 +8,8 @@ uses
   FMXTee.Series, FMXTee.Procs, FMXTee.Chart, FMX.Objects,
   FMX.Controls.Presentation, FMX.StdCtrls, FMX.DateTimeCtrls, FMX.ListBox,
   FMX.Controls3D, FMXTee.Chart3D, FMX.Ani, System.ImageList, FMX.ImgList,
-  Data.DB, Data.Win.ADODB, DateUtils, System.IOUtils;
+  Data.DB, Data.Win.ADODB, DateUtils, System.IOUtils, FMX.TabControl,
+  FMX.Layouts, Frame_Vendedores;
 
 type
   TFrm_principal = class(TForm)
@@ -105,6 +106,60 @@ type
     RB_dataSelecionadaPagar: TRadioButton;
     RB_emissaoPagar: TRadioButton;
     RB_vencimentoPagar: TRadioButton;
+    TabControl1: TTabControl;
+    TabItem1: TTabItem;
+    TabItem2: TTabItem;
+    Rectangle2: TRectangle;
+    ListBox1: TListBox;
+    VertScrollBox1: TVertScrollBox;
+    ADOQuery_vendedores: TADOQuery;
+    GridPanelLayout1: TGridPanelLayout;
+    Chart1: TChart;
+    FloatAnimation3: TFloatAnimation;
+    FloatAnimation4: TFloatAnimation;
+    FloatAnimation5: TFloatAnimation;
+    LineSeries1: TLineSeries;
+    Layout1: TLayout;
+    Rectangle3: TRectangle;
+    Label2: TLabel;
+    Arc1: TArc;
+    Arc2: TArc;
+    Label6: TLabel;
+    FloatAnimation1: TFloatAnimation;
+    Rectangle4: TRectangle;
+    Label8: TLabel;
+    Arc3: TArc;
+    Arc4: TArc;
+    Label10: TLabel;
+    FloatAnimation2: TFloatAnimation;
+    Rectangle5: TRectangle;
+    RoundRect1: TRoundRect;
+    Image1: TImage;
+    Label11: TLabel;
+    Lbl_vendas_vendedor: TLabel;
+    RoundRect2: TRoundRect;
+    Image2: TImage;
+    Label13: TLabel;
+    Lbl_qtd_vendedor: TLabel;
+    RoundRect3: TRoundRect;
+    Image3: TImage;
+    Label17: TLabel;
+    Lbl_ticket_vendedor: TLabel;
+    RoundRect4: TRoundRect;
+    Label20: TLabel;
+    Label21: TLabel;
+    RoundRect5: TRoundRect;
+    Label4: TLabel;
+    Label9: TLabel;
+    Layout2: TLayout;
+    Label22: TLabel;
+    Label23: TLabel;
+    ADOQuery_hist_vendedor: TADOQuery;
+    ADOQuery_info_diaria_vendedor: TADOQuery;
+    CornerButton1: TCornerButton;
+    CornerButton2: TCornerButton;
+    RoundRect6: TRoundRect;
+    Label12: TLabel;
     procedure FormShow(Sender: TObject);
     procedure Rect_vendas_mensalMouseEnter(Sender: TObject);
     procedure Rect_vendas_mensalMouseLeave(Sender: TObject);
@@ -124,6 +179,11 @@ type
     procedure FormCreate(Sender: TObject);
     procedure Btn_configReceberClick(Sender: TObject);
     procedure Btn_configPagarClick(Sender: TObject);
+    procedure ListBox1ItemClick(const Sender: TCustomListBox;
+      const Item: TListBoxItem);
+    procedure TabControl1Change(Sender: TObject);
+    procedure CornerButton2Click(Sender: TObject);
+    procedure CornerButton1Click(Sender: TObject);
   private
     procedure Atualiza_dados;
     procedure Atualiza_Resumo_Mensal();
@@ -134,6 +194,8 @@ type
     procedure Busca_metas;
     procedure CalculaMetas(Meta, Venda_total: Double; FloatAnimation:TFloatAnimation; Label_percentual:TLabel );
     function Local_do_aplicativo: string;
+    procedure Ranking_vendedores();
+    function Retorna_Venda_total_Funcionario(Item: TListBoxItem): Double;
     var Processo: String;
         venda_total, meta, super_meta: Double;
         String_connection: TStringList;
@@ -183,12 +245,18 @@ begin
 end;
 
 procedure TFrm_principal.FormShow(Sender: TObject);
+var I: Integer;
+    FFrame: TF_vendedores;
+    item: TListBoxItem;
+    data_inicial, data_final: String;
 begin
   //ABERTURA DO FORM QUE PREENCHE TODAS AS INFORMAÇÕES
   DateEdit_inicial.Date := StartOfTheMonth(Now); // primeiro dia do mês atual
   DateEdit_final.Date   := EndOfTheMonth(Now); // último dia do mês atual
   Atualiza_dados();
 
+  //ABA VENDEDORES
+  Ranking_vendedores();
 end;
 
 procedure TFrm_principal.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -203,7 +271,6 @@ begin
   //TIMER QUE ATUALIZA AS INFORMAÇÕES DIÁRIAS DE 1 EM 1 MINUTO
   InformacoesDiarias();
 end;
-
 
 {$region 'Animações Painéis'}
 
@@ -247,6 +314,42 @@ begin
   Anim_Y_grafico.Inverse:= True;
   Anim_Y_grafico.Start;
   //Chart_vendas_por_mes.Legend.VertSpacing:= 2;
+end;
+
+procedure TFrm_principal.CornerButton1Click(Sender: TObject);
+begin
+  if TabControl1.TabIndex > 0 then
+    TabControl1.Previous
+  else
+    TabControl1.TabIndex := TabControl1.TabCount -1; // Retorna para a primeira aba
+
+  case TabControl1.TabIndex of
+    0:begin
+      Label12.Text:= 'Geral';
+    end;
+    1:begin
+      Label12.Text:= 'Vendedores';
+    end;
+  end;
+
+end;
+
+procedure TFrm_principal.CornerButton2Click(Sender: TObject);
+begin
+  if TabControl1.TabIndex < TabControl1.TabCount - 1 then
+    TabControl1.Next
+  else
+    TabControl1.TabIndex := 0; // Retorna para a primeira aba
+
+  case TabControl1.TabIndex of
+    0:begin
+      Label12.Text:= 'Geral';
+    end;
+    1:begin
+      Label12.Text:= 'Vendedores';
+    end;
+  end;
+
 end;
 
 procedure TFrm_principal.Btn_configPagarClick(Sender: TObject);
@@ -339,10 +442,18 @@ end;
 
 procedure TFrm_principal.img_atualizarClick(Sender: TObject);
 begin
-  //ATUALIZA A PÁGINA
-  Atualiza_dados();
-  Anim_grafico_meta.Start;
-  Anim_grafico_superMeta.Start;
+
+
+    if TabItem2.IsSelected then
+  begin
+    Ranking_vendedores()
+  end else
+  begin
+   //ATUALIZA A PÁGINA
+    Atualiza_dados();
+    Anim_grafico_meta.Start;
+    Anim_grafico_superMeta.Start;
+  end;
 end;
 
 procedure TFrm_principal.img_atualizarMouseEnter(Sender: TObject);
@@ -557,6 +668,22 @@ begin
 
 end;
 
+procedure TFrm_principal.TabControl1Change(Sender: TObject);
+var data_inicial, data_final: String;
+    I: Integer;
+    FFrame: TF_vendedores;
+    item: TListBoxItem;
+begin
+
+  if TabItem2.IsSelected then
+  begin
+    Ranking_vendedores()
+  end else
+  begin
+   //
+  end;
+end;
+
 procedure TFrm_principal.ThreadEnd(Sender: TObject);
 begin
 
@@ -714,9 +841,130 @@ begin
   Result:= nome_mes;
 end;
 
+procedure TFrm_principal.ListBox1ItemClick(const Sender: TCustomListBox;
+  const Item: TListBoxItem);
+var total: Double;
+begin
+  Total:= Retorna_Venda_total_Funcionario(Item);
+  //CHAMAR PROCEDURE QUE RETORNA METAS, PASSANDO CÓDIGO FUNCIONÁRIO, VALOR TOTAL E MÊS
+  CalculaMetas(10000,Total,FloatAnimation1,Label6);
+  CalculaMetas(12000,Total,FloatAnimation2,Label10);
+  
+  ADOQuery_hist_vendedor.Close;
+  ADOQuery_hist_vendedor.SQL.Clear;
+  ADOQuery_hist_vendedor.SQL.Add('PRD_HISTORICO_VENDEDOR '+chr(39)+Item.Tag.ToString+chr(39));
+  ADOQuery_hist_vendedor.Open;
+
+  //PREENCHE O GADOQuery_hist_vendedorRÁFICO
+  LineSeries1.Clear;
+  ADOQuery_hist_vendedor.First;
+  for var I:= 0 to 12 do
+  begin
+    //Anima_inicio_grafico.Stop;
+    LineSeries1.add(ADOQuery_hist_vendedor.FieldByName('TOTAL_VENDA').AsCurrency,
+                RetornaMes(ADOQuery_hist_vendedor.FieldByName('MES').AsInteger)+''#13''+
+                ADOQuery_hist_vendedor.FieldByName('ANO').AsString
+                );
+
+    //ANIMAÇÃO DE PREENCHIMETNO DO GRÁFICO
+//    Anima_inicio_grafico.StopValue:= 105;
+//    Anima_inicio_grafico.Start;
+    ADOQuery_hist_vendedor.Next;
+  end;
+
+  ADOQuery_info_diaria_vendedor.Close;
+  ADOQuery_info_diaria_vendedor.SQL.Clear;
+  ADOQuery_info_diaria_vendedor.SQL.Add('PRD_INFORMACOES_DIARIAS_VENDEDOR '+chr(39)+Item.Tag.ToString+chr(39));
+  ADOQuery_info_diaria_vendedor.Open;
+
+  //PREENCHE O LABEL DE INFORMAÇÕES DIÁRIAS NO RODAPÉ DA PÁGINA
+  Lbl_vendas_vendedor.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_info_diaria_vendedor.FieldByName('total').AsCurrency);
+  Lbl_ticket_vendedor.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_info_diaria_vendedor.FieldByName('ticket').AsCurrency);
+  Lbl_qtd_vendedor.Text:= FormatCurr('####,###0.000',ADOQuery_info_diaria_vendedor.FieldByName('quantidade').AsCurrency);
+end;
+
 function TFrm_principal.Local_do_aplicativo: string;
 begin
   Result:= ExtractFilePath(ParamStr(0));
+end;
+
+procedure TFrm_principal.Ranking_vendedores();
+var I: Integer;
+    FFrame: TF_vendedores;
+    item: TListBoxItem;
+    data_inicial, data_final: String;
+begin
+  //teste aba vendedores
+  Try
+
+    data_inicial:= FormatDateTime('yyyy-mm-dd', StrToDate(DateEdit_inicial.Text));
+    data_final  := FormatDateTime('yyyy-mm-dd', StrToDate(DateEdit_final.Text));
+    I:= 0;
+    if ADOQuery_vendedores.IsEmpty then
+      sleep(1000);
+    ADOQuery_vendedores.Close;
+    ADOQuery_vendedores.SQL.Clear;
+    ADOQuery_vendedores.SQL.Add('PRD_INFO_VENDEDORES '
+                                +chr(39)+data_inicial+chr(39)+', '
+                                +chr(39)+data_final+chr(39));
+    ADOQuery_vendedores.Open;
+
+    ADOQuery_vendedores.First;
+    ListBox1.Clear;
+    ListBox1.BeginUpdate;
+    while not(ADOQuery_vendedores.Eof) do
+    begin
+      item:= TListBoxItem.Create(nil);
+      item.Margins.Left:= 8;
+      item.Margins.Top:= 3;
+      item.Margins.Bottom:= 3;
+      item.Margins.Right:= 8;
+      FFrame:= TF_vendedores.Create(nil);
+
+      //o frame vai ser criado dentro do item
+
+      FFrame.Align:= TAlignLayout.Top;
+      item.Height:= 107;
+      FFrame.Label_nome.Text:= ADOQuery_vendedores.FieldByName('vendedor').AsString;
+      FFrame.Label_ordem.Text:= (I+1).ToString+'º';
+      FFrame.Label_total.Text:= CurrToStr(ADOQuery_vendedores.FieldByName('total').AsCurrency);
+      FFrame.Label_tiket_medio.Text:= 'Ticket Médio: '+CurrToStr(ADOQuery_vendedores.FieldByName('ticket').AsCurrency);
+      item.Tag:= ADOQuery_vendedores.FieldByName('codigo_vendedor').AsInteger;
+      item.AddObject(FFrame);
+
+      ListBox1.AddObject(item);
+      ADOQuery_vendedores.Next;
+      I:= I+1;
+    end;
+  finally
+    ListBox1.EndUpdate;//anula o repaint ou refresh do component.
+  end;
+end;
+
+function TFrm_principal.Retorna_Venda_total_Funcionario(Item: TListBoxItem): Double;
+var Objetc: TFmxObject;
+    Component: TComponent;
+begin
+  for var I := 0 to Item.ChildrenCount -1 do
+  begin
+    Objetc:= Item.Children.Items[I];
+    if Objetc is TFrame then
+    begin
+      for var J:= 0 to TFrame(Objetc).ComponentCount - 1 do
+      begin
+        Component:= TFrame(Objetc).Components[J];
+        if Component is TLabel then
+        begin
+          if pos('total',TLabel(Component).Name) > 0 then
+          begin
+            Result:= TLabel(Component).Text.ToDouble;
+            Exit;
+          end;
+        end;
+        
+      end;
+    end;
+  end;
 end;
 
 {$ENDREGION}
