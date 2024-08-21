@@ -145,12 +145,12 @@ type
     Image3: TImage;
     Label17: TLabel;
     Lbl_ticket_vendedor: TLabel;
-    RoundRect4: TRoundRect;
+    RoundRect_meta: TRoundRect;
     Label20: TLabel;
-    Label21: TLabel;
-    RoundRect5: TRoundRect;
+    Label_meta: TLabel;
+    RoundRect_super: TRoundRect;
     Label4: TLabel;
-    Label9: TLabel;
+    Label_super_meta: TLabel;
     Layout2: TLayout;
     Label22: TLabel;
     Label23: TLabel;
@@ -160,6 +160,11 @@ type
     CornerButton2: TCornerButton;
     RoundRect6: TRoundRect;
     Label12: TLabel;
+    RoundRect7: TRoundRect;
+    FloatAnimation_meta: TFloatAnimation;
+    GradientAnimation_meta: TGradientAnimation;
+    FloatAnimation_super: TFloatAnimation;
+    GradientAnimation_super: TGradientAnimation;
     procedure FormShow(Sender: TObject);
     procedure Rect_vendas_mensalMouseEnter(Sender: TObject);
     procedure Rect_vendas_mensalMouseLeave(Sender: TObject);
@@ -196,6 +201,12 @@ type
     function Local_do_aplicativo: string;
     procedure Ranking_vendedores();
     function Retorna_Venda_total_Funcionario(Item: TListBoxItem): Double;
+    procedure Captura_metas_vendedor(Item: TListBoxItem);
+    procedure Estiliza_metas(Alcancada: Boolean; Rectangle: TRoundRect; Gradient_Animation:TGradientAnimation; Float_anim: TFloatAnimation);
+    procedure Estiliza_item_clicado(Item: TListBoxItem; Cor:TAlphaColor);
+    procedure Lista_itens(ListBox: TListbox; Tag: Integer);
+    procedure Historico_vendas_vendedor(Codigo_vendedor: String);
+    procedure Informacoes_diaria_vendedor(Codigo_vendedor: String);
     var Processo: String;
         venda_total, meta, super_meta: Double;
         String_connection: TStringList;
@@ -203,6 +214,9 @@ type
   public
     { Public declarations }
     var codigo_loja: String;
+    const meta_batida: TAlphacolor = $FF2DFF0C;
+          meta_aberta: TAlphacolor = $FF74DFFB;
+          fundo_meta_aberta: TAlphacolor = $FF0D437A;
   end;
 
 var
@@ -442,9 +456,7 @@ end;
 
 procedure TFrm_principal.img_atualizarClick(Sender: TObject);
 begin
-
-
-    if TabItem2.IsSelected then
+  if TabItem2.IsSelected then
   begin
     Ranking_vendedores()
   end else
@@ -843,48 +855,48 @@ end;
 
 procedure TFrm_principal.ListBox1ItemClick(const Sender: TCustomListBox;
   const Item: TListBoxItem);
-var total: Double;
+var total, meta, super_meta: Double;
 begin
+(*AO CLICAR NO ITEM DO VENDEDOR, PREENCHE AS INFORMAÇÕES DE METAS E VENDAS*)
   Total:= Retorna_Venda_total_Funcionario(Item);
-  //CHAMAR PROCEDURE QUE RETORNA METAS, PASSANDO CÓDIGO FUNCIONÁRIO, VALOR TOTAL E MÊS
-  CalculaMetas(10000,Total,FloatAnimation1,Label6);
-  CalculaMetas(12000,Total,FloatAnimation2,Label10);
-  
-  ADOQuery_hist_vendedor.Close;
-  ADOQuery_hist_vendedor.SQL.Clear;
-  ADOQuery_hist_vendedor.SQL.Add('PRD_HISTORICO_VENDEDOR '+chr(39)+Item.Tag.ToString+chr(39));
-  ADOQuery_hist_vendedor.Open;
+  Captura_metas_vendedor(Item);
+  meta:= (StringReplace(Label_meta.Text,'R$ ','',[])).ToDouble;
+  super_meta:= (StringReplace(Label_super_meta.Text,'R$ ','',[])).ToDouble;
 
-  //PREENCHE O GADOQuery_hist_vendedorRÁFICO
-  LineSeries1.Clear;
-  ADOQuery_hist_vendedor.First;
-  for var I:= 0 to 12 do
+  //Preenche o gráfico de metas e super metas
+  CalculaMetas(meta,Total,FloatAnimation1,Label6);
+  CalculaMetas(super_meta,Total,FloatAnimation2,Label10);
+
+  //Estiliza o mostrativo de metas caso atingida ou não.
+  if Total >= Meta then
   begin
-    //Anima_inicio_grafico.Stop;
-    LineSeries1.add(ADOQuery_hist_vendedor.FieldByName('TOTAL_VENDA').AsCurrency,
-                RetornaMes(ADOQuery_hist_vendedor.FieldByName('MES').AsInteger)+''#13''+
-                ADOQuery_hist_vendedor.FieldByName('ANO').AsString
-                );
-
-    //ANIMAÇÃO DE PREENCHIMETNO DO GRÁFICO
-//    Anima_inicio_grafico.StopValue:= 105;
-//    Anima_inicio_grafico.Start;
-    ADOQuery_hist_vendedor.Next;
+    Estiliza_metas(True,RoundRect_meta,GradientAnimation_meta,FloatAnimation_meta);
+  end else
+  begin
+    Estiliza_metas(False,RoundRect_meta,GradientAnimation_meta,FloatAnimation_meta);
   end;
 
-  ADOQuery_info_diaria_vendedor.Close;
-  ADOQuery_info_diaria_vendedor.SQL.Clear;
-  ADOQuery_info_diaria_vendedor.SQL.Add('PRD_INFORMACOES_DIARIAS_VENDEDOR '+chr(39)+Item.Tag.ToString+chr(39));
-  ADOQuery_info_diaria_vendedor.Open;
+  //Estiliza o mostrativo de super metas caso atingida ou não.
+  if Total >= super_meta then
+  begin
+    Estiliza_metas(True,RoundRect_super,GradientAnimation_super,FloatAnimation_super);
+  end else
+  begin
+    Estiliza_metas(False,RoundRect_super,GradientAnimation_super,FloatAnimation_super);
+  end;
 
-  //PREENCHE O LABEL DE INFORMAÇÕES DIÁRIAS NO RODAPÉ DA PÁGINA
-  Lbl_vendas_vendedor.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_info_diaria_vendedor.FieldByName('total').AsCurrency);
-  Lbl_ticket_vendedor.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_info_diaria_vendedor.FieldByName('ticket').AsCurrency);
-  Lbl_qtd_vendedor.Text:= FormatCurr('####,###0.000',ADOQuery_info_diaria_vendedor.FieldByName('quantidade').AsCurrency);
+  //Preenche o histórico de vendas, passando o código do vendedor clicado
+  Historico_vendas_vendedor(Item.Tag.ToString);
+
+  Informacoes_diaria_vendedor(Item.Tag.ToString);
+
+  //Lista items do ListBox para estilizar o item clicado
+  Lista_itens(ListBox1, Item.Tag);
 end;
 
 function TFrm_principal.Local_do_aplicativo: string;
 begin
+(*retorna o diretório onde o aplicativo está salvo*)
   Result:= ExtractFilePath(ParamStr(0));
 end;
 
@@ -894,12 +906,13 @@ var I: Integer;
     item: TListBoxItem;
     data_inicial, data_final: String;
 begin
-  //teste aba vendedores
+(*PREENCHE O LISTBOX COM OS VENDEDORES*)
   Try
 
     data_inicial:= FormatDateTime('yyyy-mm-dd', StrToDate(DateEdit_inicial.Text));
     data_final  := FormatDateTime('yyyy-mm-dd', StrToDate(DateEdit_final.Text));
-    I:= 0;
+    I:= 1;
+
     if ADOQuery_vendedores.IsEmpty then
       sleep(1000);
     ADOQuery_vendedores.Close;
@@ -912,6 +925,7 @@ begin
     ADOQuery_vendedores.First;
     ListBox1.Clear;
     ListBox1.BeginUpdate;
+
     while not(ADOQuery_vendedores.Eof) do
     begin
       item:= TListBoxItem.Create(nil);
@@ -926,10 +940,29 @@ begin
       FFrame.Align:= TAlignLayout.Top;
       item.Height:= 107;
       FFrame.Label_nome.Text:= ADOQuery_vendedores.FieldByName('vendedor').AsString;
-      FFrame.Label_ordem.Text:= (I+1).ToString+'º';
-      FFrame.Label_total.Text:= CurrToStr(ADOQuery_vendedores.FieldByName('total').AsCurrency);
-      FFrame.Label_tiket_medio.Text:= 'Ticket Médio: '+CurrToStr(ADOQuery_vendedores.FieldByName('ticket').AsCurrency);
+      FFrame.Label_ordem.Text:= (I).ToString+'º';
+      FFrame.Label_total.Text:= FormatCurr('####,##0.00',ADOQuery_vendedores.FieldByName('total').AsCurrency);
+      FFrame.Label_tiket_medio.Text:= 'Ticket Médio: '+FormatCurr('####,##0.00',ADOQuery_vendedores.FieldByName('ticket').AsCurrency);
+      FFrame.meta.Text:= FormatCurr('####,##0.00',ADOQuery_vendedores.FieldByName('meta').AsCurrency);
+      FFrame.super.Text:= FormatCurr('####,##0.00',ADOQuery_vendedores.FieldByName('super_meta').AsCurrency);
       item.Tag:= ADOQuery_vendedores.FieldByName('codigo_vendedor').AsInteger;
+
+      //Preenche as bolinhas coloridas para os primeiros colocados
+      case I of
+        1:begin //1º do ranking
+          FFrame.Circle1.Visible:= True;
+          FFrame.Circle1.Fill.Color:= TAlphaColors.Gold;
+        end;
+        2:begin //2º do ranking
+          FFrame.Circle1.Visible:= True;
+          FFrame.Circle1.Fill.Color:= TAlphaColors.Silver;
+        end;
+        3:begin //3º do ranking
+          FFrame.Circle1.Visible:= True;
+          FFrame.Circle1.Fill.Color:= $FFA27F11;
+        end;
+
+      end;
       item.AddObject(FFrame);
 
       ListBox1.AddObject(item);
@@ -945,6 +978,7 @@ function TFrm_principal.Retorna_Venda_total_Funcionario(Item: TListBoxItem): Dou
 var Objetc: TFmxObject;
     Component: TComponent;
 begin
+(*RETORNA O VALOR TOTAL DE VENDA DO VENDEDOR SELECIONADO*)
   for var I := 0 to Item.ChildrenCount -1 do
   begin
     Objetc:= Item.Children.Items[I];
@@ -957,16 +991,141 @@ begin
         begin
           if pos('total',TLabel(Component).Name) > 0 then
           begin
-            Result:= TLabel(Component).Text.ToDouble;
+            Result:= StringReplace(TLabel(Component).Text,'.','',[]).ToDouble;
             Exit;
           end;
         end;
-        
       end;
     end;
   end;
 end;
 
+procedure TFrm_principal.Captura_metas_vendedor(Item: TListBoxItem);
+var Objetc: TFmxObject;
+    Component: TComponent;
+begin
+(*PREENCHE OS LABELS COM SO VALORES DE META E SUPER META DE CADA VENDEDOR*)
+  for var I := 0 to Item.ChildrenCount -1 do
+  begin
+    Objetc:= Item.Children.Items[I];
+    if Objetc is TFrame then
+    begin
+      for var J:= 0 to TFrame(Objetc).ComponentCount - 1 do
+      begin
+        Component:= TFrame(Objetc).Components[J];
+        if Component is TLabel then
+        begin
+          if pos('meta',TLabel(Component).Name) > 0 then
+          begin
+            Label_meta.Text:= 'R$ '+StringReplace(TLabel(Component).Text,'.','',[]);
+          end;
+          if pos('super',TLabel(Component).Name) > 0 then
+          begin
+            Label_super_meta.Text:= 'R$ '+StringReplace(TLabel(Component).Text,'.','',[]);
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TFrm_principal.Estiliza_metas(Alcancada: Boolean; Rectangle: TRoundRect;
+          Gradient_Animation:TGradientAnimation; Float_anim: TFloatAnimation);
+begin
+(*ESTILIZA OS CAMPOS ONDE MOSTRAM AS METAS, CASO FOREM ATINGIDAS OU NÃO*)
+  if Alcancada then
+  begin
+    Float_anim.Start;
+    Rectangle.Stroke.Color:= meta_batida;
+    Gradient_Animation.StopValue.Points[0].Color:= $FF057c46;
+    //Gradient_Animation.StopValue.Points[1].Color:= $FF057c46;
+    Gradient_Animation.Start;
+  end else
+  begin
+    Gradient_Animation.StopValue.Points[0].Color:= fundo_meta_aberta;
+    //Gradient_Animation.StopValue.Points[1].Color:= fundo_meta_aberta;
+    Gradient_Animation.Start;
+    Float_anim.Start;
+    Rectangle.Stroke.Color:= meta_aberta;
+  end;
+end;
+
+procedure TFrm_principal.Estiliza_item_clicado(Item: TListBoxItem; Cor:TAlphaColor);
+var Objetc: TFmxObject;
+    Component: TComponent;
+begin
+(*ESTILIZA O ITEM CLICADO DO LISTBOX*)
+  for var I := 0 to Item.ChildrenCount -1 do
+  begin
+    Objetc:= Item.Children.Items[I];
+    if Objetc is TFrame then   //FRAME
+    begin
+      for var J:= 0 to TFrame(Objetc).ComponentCount - 1 do
+      begin
+        Component:= TFrame(Objetc).Components[J];
+        if Component is TRectangle then //RECTANGLE
+        begin
+          TRectangle(Component).Fill.Color:= Cor;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TFrm_principal.Lista_itens(ListBox: TListbox; Tag: Integer);
+var Item: TListBoxItem;
+begin
+(*LISTA ITENS DO LSITBOX E CHAMA A ESTILIZAÇÃO PARA O ITEM CLICADO,
+E DESFAZ A ESTILIZAÇÃO PARA OS DEMAIS ITENS DERMACADOS*)
+  for var I := 0 to ListBox.Count -1 do
+  begin
+    Item:= ListBox.ListItems[I];
+    if (Item is TListBoxItem) and (Item.Tag = Tag)  then
+    begin
+      Estiliza_item_clicado(Item, $FF65D2C5);
+    end else
+    Begin
+      Estiliza_item_clicado(Item, $FFF5F4F4);
+    End;
+  end;
+end;
+
+procedure TFrm_principal.Historico_vendas_vendedor(Codigo_vendedor: String);
+begin
+(*PREENCHE O GRÁFICO DO HISTÓRIO DE VENDAS DO VENDEDOR SELECIONADO*)
+  ADOQuery_hist_vendedor.Close;
+  ADOQuery_hist_vendedor.SQL.Clear;
+  ADOQuery_hist_vendedor.SQL.Add('PRD_HISTORICO_VENDEDOR '+chr(39)+Codigo_vendedor+chr(39));
+  ADOQuery_hist_vendedor.Open;
+
+  //PREENCHE O GRÁFICO
+  LineSeries1.Clear;
+  ADOQuery_hist_vendedor.First;
+  for var I:= 0 to 12 do
+  begin
+    LineSeries1.add(ADOQuery_hist_vendedor.FieldByName('TOTAL_VENDA').AsCurrency,
+                RetornaMes(ADOQuery_hist_vendedor.FieldByName('MES').AsInteger)+''#13''+
+                ADOQuery_hist_vendedor.FieldByName('ANO').AsString
+                );
+
+
+    ADOQuery_hist_vendedor.Next;
+  end;
+end;
+
+procedure TFrm_principal.Informacoes_diaria_vendedor(Codigo_vendedor: String);
+begin
+(*PREENCHE AS INFORMAÇÕES DIÁRIAS DO VENDEDOR SELECIONADO*)
+  ADOQuery_info_diaria_vendedor.Close;
+  ADOQuery_info_diaria_vendedor.SQL.Clear;
+  ADOQuery_info_diaria_vendedor.SQL.Add('PRD_INFORMACOES_DIARIAS_VENDEDOR '+chr(39)+Codigo_vendedor+chr(39));
+  ADOQuery_info_diaria_vendedor.Open;
+
+  //PREENCHE O LABEL DE INFORMAÇÕES DIÁRIAS NO RODAPÉ DA PÁGINA
+  Lbl_vendas_vendedor.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_info_diaria_vendedor.FieldByName('total').AsCurrency);
+  Lbl_ticket_vendedor.Text:= 'R$ '+ FormatCurr('####,##0.00',ADOQuery_info_diaria_vendedor.FieldByName('ticket').AsCurrency);
+  Lbl_qtd_vendedor.Text:= FormatCurr('####,###0.000',ADOQuery_info_diaria_vendedor.FieldByName('quantidade').AsCurrency);
+end;
 {$ENDREGION}
 
 end.

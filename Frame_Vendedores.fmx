@@ -3,24 +3,24 @@ object F_vendedores: TF_vendedores
   Align = Top
   Locked = True
   HitTest = False
-  Size.Width = 507.000000000000000000
+  Size.Width = 523.000000000000000000
   Size.Height = 107.000000000000000000
   Size.PlatformDefault = False
   object Rectangle1: TRectangle
     Align = Client
-    Fill.Kind = None
+    Fill.Color = xFFF5F4F4
     Locked = True
     HitTest = False
-    Size.Width = 507.000000000000000000
+    Size.Width = 523.000000000000000000
     Size.Height = 107.000000000000000000
     Size.PlatformDefault = False
-    Stroke.Thickness = 2.000000000000000000
+    Stroke.Thickness = 3.000000000000000000
     XRadius = 10.000000000000000000
     YRadius = 10.000000000000000000
     object Layout1: TLayout
       Align = Client
       Locked = True
-      Size.Width = 507.000000000000000000
+      Size.Width = 523.000000000000000000
       Size.Height = 107.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 0
@@ -42,7 +42,7 @@ object F_vendedores: TF_vendedores
         Align = Client
         Locked = True
         Margins.Left = 12.000000000000000000
-        Size.Width = 436.000000000000000000
+        Size.Width = 452.000000000000000000
         Size.Height = 107.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
@@ -53,12 +53,12 @@ object F_vendedores: TF_vendedores
           Locked = True
           Margins.Top = 10.000000000000000000
           Position.Y = 10.000000000000000000
-          Size.Width = 436.000000000000000000
+          Size.Width = 452.000000000000000000
           Size.Height = 22.000000000000000000
           Size.PlatformDefault = False
           TextSettings.Font.Size = 16.000000000000000000
           TextSettings.Font.StyleExt = {00070000000000000004000000}
-          TextSettings.FontColor = xFF646464
+          TextSettings.FontColor = xFF64058A
           Text = 'Label_nome'
           TabOrder = 0
         end
@@ -66,14 +66,15 @@ object F_vendedores: TF_vendedores
           Align = Bottom
           StyledSettings = [Family]
           Locked = True
+          Margins.Right = 70.000000000000000000
           Margins.Bottom = 10.000000000000000000
           Position.Y = 69.000000000000000000
-          Size.Width = 436.000000000000000000
+          Size.Width = 382.000000000000000000
           Size.Height = 28.000000000000000000
           Size.PlatformDefault = False
           TextSettings.Font.Size = 16.000000000000000000
           TextSettings.Font.StyleExt = {00070000000000000004000000}
-          TextSettings.FontColor = claGreen
+          TextSettings.FontColor = xFF646464
           Text = 'Label_tiket_medio'
           TabOrder = 1
         end
@@ -93,18 +94,43 @@ object F_vendedores: TF_vendedores
         object Label1: TLabel
           StyledSettings = []
           Position.X = -1.000000000000000000
-          Position.Y = 41.000000000000000000
+          Position.Y = 42.000000000000000000
           Size.Width = 65.000000000000000000
           Size.Height = 17.000000000000000000
           Size.PlatformDefault = False
           TextSettings.Font.Family = 'Default'
           TextSettings.Font.Size = 16.000000000000000000
           TextSettings.Font.StyleExt = {00070000000000000004000000}
-          TextSettings.FontColor = xFF646464
+          TextSettings.FontColor = claDarkgreen
           Text = 'Vendas:'
           TabOrder = 3
         end
       end
     end
+  end
+  object meta: TLabel
+    Position.X = 352.000000000000000000
+    Position.Y = 8.000000000000000000
+    Text = 'meta'
+    Visible = False
+    TabOrder = 0
+  end
+  object super: TLabel
+    Position.X = 352.000000000000000000
+    Position.Y = 48.000000000000000000
+    Visible = False
+    TabOrder = 1
+  end
+  object Circle1: TCircle
+    Anchors = [akTop, akRight]
+    Fill.Color = xFFFAF0F0
+    HitTest = False
+    Position.X = 488.000000000000000000
+    Position.Y = 73.000000000000000000
+    Size.Width = 30.000000000000000000
+    Size.Height = 30.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+    Visible = False
   end
 end

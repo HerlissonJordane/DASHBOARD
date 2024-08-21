@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, 
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
-  FMX.Objects, FMX.Controls.Presentation, FMX.Layouts;
+  FMX.Objects, FMX.Controls.Presentation, FMX.Layouts, FMX.Ani;
 
 type
   TF_vendedores = class(TFrame)
@@ -17,6 +17,9 @@ type
     Layout2: TLayout;
     Label_total: TLabel;
     Label1: TLabel;
+    meta: TLabel;
+    super: TLabel;
+    Circle1: TCircle;
   private
     { Private declarations }
   public
