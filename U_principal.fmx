@@ -6774,7 +6774,7 @@ object Frm_principal: TFrm_principal
       XRadius = 15.000000000000000000
       YRadius = 15.000000000000000000
       object DateEdit_final: TDateEdit
-        Date = 45525.000000000000000000
+        Date = 45533.000000000000000000
         TodayDefault = True
         Align = Contents
         Cursor = crHandPoint
@@ -6814,7 +6814,7 @@ object Frm_principal: TFrm_principal
       XRadius = 15.000000000000000000
       YRadius = 15.000000000000000000
       object DateEdit_inicial: TDateEdit
-        Date = 45525.000000000000000000
+        Date = 45533.000000000000000000
         TodayDefault = True
         Align = Contents
         Cursor = crHandPoint
@@ -7192,6 +7192,7 @@ object Frm_principal: TFrm_principal
     end
   end
   object CornerButton1: TCornerButton
+    Cursor = crHandPoint
     Position.X = 18.000000000000000000
     Position.Y = 10.000000000000000000
     Sides = [Top, Left, Bottom, Right]
@@ -7205,6 +7206,7 @@ object Frm_principal: TFrm_principal
     OnClick = CornerButton1Click
   end
   object CornerButton2: TCornerButton
+    Cursor = crHandPoint
     Position.X = 170.000000000000000000
     Position.Y = 10.000000000000000000
     Sides = [Top, Left, Bottom, Right]

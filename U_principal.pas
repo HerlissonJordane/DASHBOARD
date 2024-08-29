@@ -213,7 +213,7 @@ type
     { Private declarations }
   public
     { Public declarations }
-    var codigo_loja: String;
+    var codigo_loja, razao_social: String;
     const meta_batida: TAlphacolor = $FF2DFF0C;
           meta_aberta: TAlphacolor = $FF74DFFB;
           fundo_meta_aberta: TAlphacolor = $FF0D437A;
@@ -249,11 +249,11 @@ begin
   Query.Connection:= ADOConnection1;
   Query.Close;
   Query.SQL.Clear;
-  Query.SQL.Add('SELECT LJ_ID FROM CAD_LJ');
+  Query.SQL.Add('SELECT LJ_ID,LJ_RAZAO FROM CAD_LJ');
   Query.Open;
 
   codigo_loja:= Query.FieldByName('lj_id').AsString;
-
+  razao_social:= Query.FieldByName('LJ_RAZAO').AsString;
   String_connection.Free;
   Query.Free;
 end;
@@ -271,6 +271,7 @@ begin
 
   //ABA VENDEDORES
   Ranking_vendedores();
+  Frm_principal.Caption:='Dasheboard - '+ razao_social;
 end;
 
 procedure TFrm_principal.FormClose(Sender: TObject; var Action: TCloseAction);
